@@ -1,5 +1,6 @@
+
 const COHORT = '/2109-CPU-RM-WEB-PT';
-const API_URL = `https://fsa-crud-2aa9294fe819.herokuapp.com/api${COHORT}/recipes`;
+const API_URL = `https://fsa-crud-2aa9294fe819.herokuapp.com/api${COHORT}/events`;
 const partyList = document.getElementById("party-list");
 const partyForm = document.getElementById("party-form");
 
@@ -19,6 +20,7 @@ async function fetchParties() {
   } catch (error) {
     console.error("Error fetching parties:", error);
   }
+  console.log(state.parties)
 }
 
 // Render parties to the DOM
@@ -27,10 +29,12 @@ function renderParties(parties) {
   parties.forEach((party) => {
     const listItem = document.createElement("li");
     listItem.innerHTML = `
-      <strong>${party.name}</strong> - ${party.date} at ${party.time}<br>
-      Location: ${party.location}<br>
-      ${party.description}<br>
+      <div id=${party.id}>
+      <p><strong>${party.name}</strong> - at ${party.date} </p><br>
+      <p>Location: ${party.location}</p><br>
+      <p>Describtion: ${party.description}</p><br>
       <button onclick="deleteParty('${party.id}')">Delete</button>
+      </div>
     `;
     partyList.appendChild(listItem);
   });
@@ -41,8 +45,7 @@ partyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const newParty = {
     name: document.getElementById("name").value,
-    date: document.getElementById("date").value,
-    time: document.getElementById("time").value,
+    date: `${document.getElementById("date").value}T${document.getElementById("time").value}Z`,
     location: document.getElementById("location").value,
     description: document.getElementById("description").value,
   };
@@ -62,21 +65,22 @@ partyForm.addEventListener("submit", async (event) => {
   } catch (error) {
     console.error("Error adding party:", error);
   }
+  fetchParties();
 });
 
 // Delete a party
 async function deleteParty(partyId) {
-  try {
-    const response = await fetch(`${API_URL}/${partyId}`, { method: "DELETE" });
-    if (response.ok) {
-      fetchParties();
-    } else {
-      console.error("Error deleting party:", response.statusText);
-    }
-  } catch (error) {
-    console.error("Error deleting party:", error);
-  }
+  // Find the party element in the DOM
+  const deleteItem = document.getElementById(partyId);
+  //remove the data from the UI
+  deleteItem.remove();
 }
 
-// Initial fetch
-fetchParties();
+//render function
+function render(){
+  // Initial fetch
+  fetchParties();
+
+}
+
+render();
