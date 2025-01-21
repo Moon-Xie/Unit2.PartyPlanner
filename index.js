@@ -30,10 +30,10 @@ function renderParties(parties) {
     const listItem = document.createElement("li");
     listItem.innerHTML = `
       <div id=${party.id}>
-      <p><strong>${party.name}</strong> - at ${party.date} </p><br>
-      <p>Location: ${party.location}</p><br>
-      <p>Describtion: ${party.description}</p><br>
-      <button onclick="deleteParty('${party.id}')">Delete</button>
+        <p><strong>${party.name}</strong> - ${formatDateTime(party.date)} </p><br>
+        <p>Location: ${party.location}</p><br>
+        <p>Describtion: ${party.description}</p><br>
+        <button onclick="deleteParty('${party.id}')">Delete</button>
       </div>
     `;
     partyList.appendChild(listItem);
@@ -43,11 +43,12 @@ function renderParties(parties) {
 // Add a new party
 partyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  let addingData = `${document.getElementById("date").value}T${document.getElementById("time").value}:00.000Z`
   const newParty = {
     name: document.getElementById("name").value,
-    date: `${document.getElementById("date").value}T${document.getElementById("time").value}Z`,
-    location: document.getElementById("location").value,
     description: document.getElementById("description").value,
+    date: addingData,
+    location: document.getElementById("location").value,
   };
 
   try {
@@ -70,11 +71,40 @@ partyForm.addEventListener("submit", async (event) => {
 
 // Delete a party
 async function deleteParty(partyId) {
-  // Find the party element in the DOM
+  /*// Find the party element in the DOM
   const deleteItem = document.getElementById(partyId);
   //remove the data from the UI
   deleteItem.remove();
+  */
+ //delete a party from the API
+ const response = fetch(API_URL, {
+  method: "DELETE",
+ });
+ if(response.ok) {
+  //remove the deleted party from the state
+  state.parties = state.parties.filter((party) => {
+    party.id !== parseInt(partyId);
+  });
+  //re-render the updated list 
+  renderParties(state.parties)
+ } else {
+  console.log("Error deleting party: ", response.statusText);
+ }
 }
+
+// Format the date into a simple readable string
+function formatDateTime(dateTimeString) {
+  const date = new Date(dateTimeString);
+  // Format the date as "Day, Month Day, Year"
+  const formattedDate = date.toDateString(); // e.g., "Thu Jan 30 2025"
+
+  // Format the time as "5 PM"
+  const hours = date.getHours();
+  const amPm = hours >= 12 ? "PM" : "AM";
+  const formattedTime = `${hours % 12 || 12} ${amPm}`; // Convert 24-hour to 12-hour format
+  
+  return `${formattedDate} at ${formattedTime}`;
+};
 
 //render function
 function render(){
